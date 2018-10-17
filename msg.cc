@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <limits.h>
 #include "joueur.h"
 
 #define MIN_AFF -20
@@ -14,7 +17,7 @@ void afficher_pos(std::vector<Joueur> joueurs) {
   printf("Tour %d\nPositions réelles :", tour) ;
   // Mettre un 'J' là où il y a un joueur
   for (unsigned i=0 ; i<joueurs.size() ; i++){
-    pos = joueurs[i].get_position() ;
+    pos = joueurs.at(i).get_position() ;
     printf(" %d", pos) ;
     if (pos > MIN_AFF && pos < MAX_AFF) {
       ligne[pos-MIN_AFF] = 'J' ;
@@ -29,144 +32,99 @@ void afficher_pos(std::vector<Joueur> joueurs) {
   tour += 1 ;
 }
 
-void mettre_a_jour(std::vector<bool> resultat, std::vector<Joueur> &joueurs, unsigned char expediteur){
+void mettre_a_jour(std::vector<bool> resultat, std::vector<Joueur> &joueurs, unsigned char demandeur){
   for (unsigned i=0 ; i<resultat.size() ; i++){
     if (resultat.at(i)) {
-      joueurs.at(i).recevoir_maj(expediteur, joueurs.at(expediteur).get_position()) ;
+      joueurs.at(demandeur).recevoir_maj(i, joueurs.at(i).get_position()) ;
     }
   }
 }
 
-int main() {
-  Joueur j1 ;
-  Joueur j2 ;
+//Compte le nombre de true dans tab, et ajoute cette valeur à nb
+void compter_messages(unsigned int &nb, std::vector<bool> tab) {
+  for (unsigned i=0 ; i<tab.size() ; i++) {
+    if (tab.at(i)) {
+      // Mettre à jour sauf si overflow
+      if (nb != INT_MAX) {
+	nb ++ ;
+	//if (nb%1000000 == 0) printf("                           %d\n", nb) ;
+      } else {
+	printf("Erreur : il y a eu un overflow dans le comptage des messages échangés. Arrêt du programme.\n") ;
+	exit(2) ;
+      }
+    }
+  }
+}
 
-  std::vector<Joueur> joueurs = std::vector<Joueur>(2) ;
-  std::vector<bool> resultat1 = std::vector<bool>(2) ;
-  std::vector<bool> resultat2 = std::vector<bool>(2) ;
-  joueurs[0] = j1 ;
-  joueurs[1] = j2 ;
-  //for ( int i=0 ; i<joueurs.size() ; i++ ) {
-  //  joueurs[i] = Joueur() ;
-  //}
+void lancer_un_tour(std::vector<Joueur> &joueurs,
+		    std::vector<int> directions,
+		    unsigned int &nb_messages,
+		    bool bouger = true,
+		    bool afficher = true) {
+  if (bouger) {
+    std::vector<std::vector<bool>> resultats = std::vector<std::vector<bool>>(joueurs.size()) ;
+    for (unsigned i=0 ; i<joueurs.size() ; i++){
+      resultats[i] = joueurs.at(i).bouger(directions.at(i)) ;
+    }
+    for (unsigned i=0 ; i<joueurs.size() ; i++){
+      mettre_a_jour(resultats.at(i), joueurs, joueurs.at(i).get_numero()) ;
+      compter_messages(nb_messages, resultats.at(i)) ;
+    }
+  }
+  if (afficher) {
+    for (unsigned i=0 ; i<joueurs.size() ; i++){
+      joueurs.at(i).aff() ;
+    }
+    afficher_pos(joueurs) ;
 
-  //j1.aff() ;
-  //  printf("et ma position est %d\n", j1.get_position()) ;
-  //  j2.aff() ;
-  //  printf("et ma position est %d\n", j2.get_position()) ;
-  //  j1.bouger(2) ;
-  //  j2.bouger(-1) ;
+    printf("###################################\n") ;
+  }
+}
 
-  joueurs[0].aff() ;
-  joueurs[1].aff() ;
-  afficher_pos(joueurs) ;
+int main(int argc, char* argv[]) {
+  //*** Test du nombre d'arguments
+  if (argc != 3) {
+    printf("Ce programme prend des arguments en entrée :\n") ;
+    printf("1) Le nombre de joueurs pour la simulation\n") ;
+    printf("2) Le nombre de tours à exécuter\n") ;
+    exit(1) ;
+  }
 
-  printf("###################################\n") ;
-  
-  resultat1 = joueurs[0].bouger(2) ;
-  resultat2 = joueurs[1].bouger(-1) ;
-  mettre_a_jour(resultat1, joueurs, joueurs.at(0).get_numero()) ;
-  mettre_a_jour(resultat2, joueurs, joueurs.at(1).get_numero()) ;
-  joueurs[0].aff() ;
-  joueurs[1].aff() ;
-  afficher_pos(joueurs) ;
+  //*** Déclarations et initialisations
 
-  printf("###################################\n") ;
+  unsigned char nb_joueurs = atoi(argv[1]) ;
+  unsigned int nb_tours = atoi(argv[2]) ;
   
-  resultat1 = joueurs[0].bouger(2) ;
-  resultat2 = joueurs[1].bouger(-1) ;
-  mettre_a_jour(resultat1, joueurs, joueurs.at(0).get_numero()) ;
-  mettre_a_jour(resultat2, joueurs, joueurs.at(1).get_numero()) ;
-  joueurs[0].aff() ;
-  joueurs[1].aff() ;
-  afficher_pos(joueurs) ;
+  std::vector<Joueur> joueurs = std::vector<Joueur>(nb_joueurs) ; //vecteur de tous les joueurs
+  std::vector<int> directions = std::vector<int>(nb_joueurs) ; //vecteur contenant la vitesse de chaque joueur.
 
-  printf("###################################\n") ;
-  
-  resultat1 = joueurs[0].bouger(2) ;
-  resultat2 = joueurs[1].bouger(-1) ;
-  mettre_a_jour(resultat1, joueurs, joueurs.at(0).get_numero()) ;
-  mettre_a_jour(resultat2, joueurs, joueurs.at(1).get_numero()) ;
-  joueurs[0].aff() ;
-  joueurs[1].aff() ;
-  afficher_pos(joueurs) ;
+  unsigned int nb_messages = 0 ; //Compteur pour savoir combien de messages auront été échangés
 
-  printf("###################################\n") ;
-  
-  resultat1 = joueurs[0].bouger(2) ;
-  resultat2 = joueurs[1].bouger(-1) ;
-  mettre_a_jour(resultat1, joueurs, joueurs.at(0).get_numero()) ;
-  mettre_a_jour(resultat2, joueurs, joueurs.at(1).get_numero()) ;
-  joueurs[0].aff() ;
-  joueurs[1].aff() ;
-  
-  afficher_pos(joueurs) ;
+  // Initialiser joueurs
+  for ( unsigned i=0 ; i<nb_joueurs ; i++ ) {
+    joueurs.at(i).set_nb_joueurs(nb_joueurs) ;
+  }
 
-  printf("###################################\n") ;
-  
-  resultat1 = joueurs[0].bouger(2) ;
-  resultat2 = joueurs[1].bouger(-1) ;
-  mettre_a_jour(resultat1, joueurs, joueurs.at(0).get_numero()) ;
-  mettre_a_jour(resultat2, joueurs, joueurs.at(1).get_numero()) ;
-  joueurs[0].aff() ;
-  joueurs[1].aff() ;
-  
-  afficher_pos(joueurs) ;
+  // Initialiser directions 
+  directions[0] = 2 ;
+  directions[1] = -1 ;
+  srand((unsigned)time(0));
+  for (unsigned i=2 ; i<directions.size() ; i++) {
+    directions[i] = - D_MAX + rand() % (2*D_MAX + 1) ;
+  }
 
-  printf("###################################\n") ;
-  
-  resultat1 = joueurs[0].bouger(2) ;
-  resultat2 = joueurs[1].bouger(-1) ;
-  mettre_a_jour(resultat1, joueurs, joueurs.at(0).get_numero()) ;
-  mettre_a_jour(resultat2, joueurs, joueurs.at(1).get_numero()) ;
-  joueurs[0].aff() ;
-  joueurs[1].aff() ;
-  
-  afficher_pos(joueurs) ;
+  //*** Départ du "véritable" traitement
 
-  printf("###################################\n") ;
-  
-  resultat1 = joueurs[0].bouger(2) ;
-  resultat2 = joueurs[1].bouger(-1) ;
-  mettre_a_jour(resultat1, joueurs, joueurs.at(0).get_numero()) ;
-  mettre_a_jour(resultat2, joueurs, joueurs.at(1).get_numero()) ;
-  joueurs[0].aff() ;
-  joueurs[1].aff() ;
-  
-  afficher_pos(joueurs) ;
+  lancer_un_tour(joueurs, directions, nb_messages, false, false) ;
 
-  printf("###################################\n") ;
-  
-  resultat1 = joueurs[0].bouger(2) ;
-  resultat2 = joueurs[1].bouger(-1) ;
-  mettre_a_jour(resultat1, joueurs, joueurs.at(0).get_numero()) ;
-  mettre_a_jour(resultat2, joueurs, joueurs.at(1).get_numero()) ;
-  joueurs[0].aff() ;
-  joueurs[1].aff() ;
-  
-  afficher_pos(joueurs) ;
+  for (unsigned int i=0 ; i<nb_tours ; i++) {
+    lancer_un_tour(joueurs, directions, nb_messages, true, false ) ;
+  }
 
-  printf("###################################\n") ;
-  
-  resultat1 = joueurs[0].bouger(2) ;
-  resultat2 = joueurs[1].bouger(-1) ;
-  mettre_a_jour(resultat1, joueurs, joueurs.at(0).get_numero()) ;
-  mettre_a_jour(resultat2, joueurs, joueurs.at(1).get_numero()) ;
-  joueurs[0].aff() ;
-  joueurs[1].aff() ;
-  
-  afficher_pos(joueurs) ;
-
-  printf("###################################\n") ;
-  
-  resultat1 = joueurs[0].bouger(2) ;
-  resultat2 = joueurs[1].bouger(-1) ;
-  mettre_a_jour(resultat1, joueurs, joueurs.at(0).get_numero()) ;
-  mettre_a_jour(resultat2, joueurs, joueurs.at(1).get_numero()) ;
-  joueurs[0].aff() ;
-  joueurs[1].aff() ;
-  
-  afficher_pos(joueurs) ;
+  printf("\n") ;
+  printf("***************************************************\n") ;
+  printf("******* On a échangé %u messages en tout *******\n", nb_messages) ;
+  printf("***************************************************\n") ;
     
   return(0) ;
 }

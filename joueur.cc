@@ -3,42 +3,65 @@
 #include <stdio.h>
 
 // Initialisations variables d'instance
-unsigned char Joueur::prochain_num_libre = 0 ;
+unsigned char Joueur::m_prochain_num_libre = 0 ;
 
 // Comstructeur(s)
 Joueur::Joueur() {
-  numero = prochain_num_libre ;
-  prochain_num_libre += 1 ;
+  m_numero = m_prochain_num_libre ;
+  m_prochain_num_libre += 1 ;
+
+  positions = std::vector<int>(0) ;
+  derniere_position_connue = std::vector<int>(0) ;
+  derniere_maj = std::vector<int>(0) ;
+  dep_depuis_maj = std::vector<int>(0) ;
+}
+
+void Joueur::set_nb_joueurs(unsigned char nb_joueurs) {
+  m_nb_joueurs = nb_joueurs ;
+  
+  positions.resize(nb_joueurs) ;
+  derniere_position_connue.resize(nb_joueurs) ;
+  derniere_maj.resize(nb_joueurs) ;
+  dep_depuis_maj.resize(nb_joueurs) ;
+}
+
+void Joueur::reset() {
+  for (unsigned char i=0 ; i<m_nb_joueurs ; i++){
+    positions[i] = 0 ;
+    derniere_position_connue[i] = 0 ;
+    derniere_maj[i] = 0 ;
+    dep_depuis_maj[i] = 0 ;
+  }
 }
 
 //Méthodes
 void Joueur::aff() {
-  printf("Je suis le numéro %u, je dispose des infos suivantes :\n", numero) ;
+  printf("Je suis le numéro %u, je dispose des infos suivantes :\n", m_numero) ;
   printf("positions :") ;
-  for (int i=0 ; i<NB_MAX_JOUEURS ; i++){
+  for (unsigned char i=0 ; i<m_nb_joueurs ; i++){
     printf(" %d", positions.at(i)) ;
   }
   printf("\nderniere_position_connue :") ;
-  for (int i=0 ; i<NB_MAX_JOUEURS ; i++){
+  for (unsigned char i=0 ; i<m_nb_joueurs ; i++){
     printf(" %d", derniere_position_connue.at(i)) ;
   }
   printf("\nderniere_maj :") ;
-  for (int i=0 ; i<NB_MAX_JOUEURS ; i++){
+  for (unsigned char i=0 ; i<m_nb_joueurs ; i++){
     printf(" %d", derniere_maj.at(i)) ;
   }
   printf("\ndep_depuis_maj :") ;
-  for (int i=0 ; i<NB_MAX_JOUEURS ; i++){
+  for (unsigned char i=0 ; i<m_nb_joueurs ; i++){
     printf(" %d", dep_depuis_maj.at(i)) ;
   }
   printf("\n") ;
 }
 
 int Joueur::get_position() {
-  return positions[numero] ;
+  return positions[m_numero] ;
 }
 
 unsigned char Joueur::get_numero() {
-  return numero ;
+  return m_numero ;
 }
 
 void Joueur::recevoir_maj(unsigned char expediteur, int nouv_position) {
@@ -49,10 +72,10 @@ void Joueur::recevoir_maj(unsigned char expediteur, int nouv_position) {
   dep_depuis_maj[expediteur] = 0 ;
 }
 
-std::vector<bool> Joueur::bouger(int dep) {
-  int position_precedente = positions[numero] ; // La position que nous avons au moment de la demande de déplacement.
+std::vector<bool> Joueur::bouger(int dep, bool verbose /*=true*/) {
+  int position_precedente = positions[m_numero] ; // La position que nous avons au moment de la demande de déplacement.
   int ancienne_position ; //La position que nous avions lors de la dernière mise à jour reçue.
-  std::vector<bool> maj = std::vector<bool>(NB_MAX_JOUEURS) ; // Le vecteur qui sera retourné par la fonction (indique si mise à jour à envoyer)
+  std::vector<bool> maj = std::vector<bool>(m_nb_joueurs) ; // Le vecteur qui sera retourné par la fonction (indique si mise à jour à envoyer)
 
   if (dep > D_MAX) {
     dep = D_MAX ;
@@ -60,13 +83,19 @@ std::vector<bool> Joueur::bouger(int dep) {
     dep = -D_MAX ;
   }
 
-  for ( int i = 0 ; i < NB_MAX_JOUEURS ; i++) {
+  for ( int i = 0 ; i < m_nb_joueurs ; i++) {
     derniere_maj[i]++ ;
   }
 
-  for ( int i = 0 ; i < NB_MAX_JOUEURS ; i++) {
-    if (i == numero) {
+  for ( int i = 0 ; i < m_nb_joueurs ; i++) {
+    if (i == m_numero) {
       // On a affaire à nous même : mettre à jour directement
+      if ( ((dep > 0) && (positions[i] > INT_MAX - dep)) || ((dep < 0) && (positions[i] < INT_MIN - dep)) ) {
+	printf("Le joueur %u a un overflow sur sa position...", m_numero) ;
+	printf("Position avant déplacement : %d", positions.at(i)) ;
+	exit(2) ;
+      }
+      
       positions[i] += dep ;
       derniere_position_connue[i] = positions[i] ;
       derniere_maj[i] = 0 ;
@@ -89,7 +118,7 @@ std::vector<bool> Joueur::bouger(int dep) {
       // Départ du test de mise à jour à proprement parler
       //if ( d_0 // Je voulais tester si d_0 < 0 (mais n'a pas de sens avec la valeur abolue dans la définition).
       if ( derniere_maj[i] * D_MAX > (d_0 + dep_sum)*TOLERANCE) {
-	printf("Je suis %d, et il va falloir que je mette à jour %d\n", numero, i) ;
+	if (verbose) printf("Je suis %d, et il va falloir que je mette à jour %d\n", m_numero, i) ;
 	maj[i] = true ;
       } else {
 	maj[i] = false ;
@@ -99,6 +128,6 @@ std::vector<bool> Joueur::bouger(int dep) {
     }
   }
   
-  //newposition = positions[numero] + bouger ;
+  //newposition = positions[m_numero] + bouger ;
   return maj ;
 }
