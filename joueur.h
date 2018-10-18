@@ -6,7 +6,7 @@
 #include <limits.h>
 
 #define D_MAX 2
-#define TOLERANCE 0.2
+#define TOLERANCE 0.5
 
 class Joueur{
   static unsigned char m_prochain_num_libre ; // Utilisé à l'initialisation pour donner un numero

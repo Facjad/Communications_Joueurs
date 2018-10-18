@@ -5,7 +5,7 @@
 // Initialisations variables d'instance
 unsigned char Joueur::m_prochain_num_libre = 0 ;
 
-// Comstructeur(s)
+// Constructeur(s)
 Joueur::Joueur() {
   m_numero = m_prochain_num_libre ;
   m_prochain_num_libre += 1 ;
