@@ -6,7 +6,7 @@
 #include <limits.h>
 
 #define D_MAX 2
-#define TOLERANCE 0.5
+#define TOLERANCE 0.2
 
 class Joueur{
   static unsigned char m_prochain_num_libre ; // Utilisé à l'initialisation pour donner un numero
@@ -33,7 +33,7 @@ class Joueur{
  * jour. C'est donc le main qui va boucler dessus, récupérer la position du joueur (avec get_position), et demander la mise à jour de l'autre joueur dont il est question. Il faudra améliorer ça...
  */
   void recevoir_maj(unsigned char expediteur, int nouv_position) ;
-  std::vector<bool> bouger(int dep, bool verbose=false) ;
+  std::vector<bool> bouger(int dep, bool verbose=true) ;
 };
 
 #endif
