@@ -18,8 +18,9 @@ int main(int argc, char* argv[]) {
   }
 
   //*** Déclarations et initialisations
-  unsigned int nb_messages = 0 ;
   unsigned int nb_tours = atoi(argv[1]) ;
+
+  unsigned int nb_messages = 0 ;
   
   std::vector<Joueur> joueurs = std::vector<Joueur>(nb_joueurs) ; //vecteur de tous les joueurs
   std::vector<int> directions = std::vector<int>(nb_joueurs) ; //vecteur contenant la vitesse de chaque joueur.

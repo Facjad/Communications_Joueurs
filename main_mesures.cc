@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
 
   //*** Déclarations et initialisations
 
-  unsigned char nb_joueurs = atoi(argv[1]) ;
+  unsigned int nb_joueurs = atoi(argv[1]) ;
   unsigned int nb_tours = atoi(argv[2]) ;
   
   std::vector<Joueur> joueurs = std::vector<Joueur>(nb_joueurs) ; //vecteur de tous les joueurs

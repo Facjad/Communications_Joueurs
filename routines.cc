@@ -29,7 +29,7 @@ void afficher_pos(std::vector<Joueur> joueurs) {
   tour += 1 ;
 }
 
-void mettre_a_jour(std::vector<bool> resultat, std::vector<Joueur> &joueurs, unsigned char demandeur){
+void mettre_a_jour(std::vector<bool> resultat, std::vector<Joueur> &joueurs, unsigned int demandeur){
   for (unsigned i=0 ; i<resultat.size() ; i++){
     if (resultat.at(i)) {
       joueurs.at(demandeur).recevoir_maj(i, joueurs.at(i).get_position()) ;
@@ -59,15 +59,15 @@ void lancer_un_tour(std::vector<Joueur> &joueurs,
 		    bool bouger,
 		    bool verbose) {
   if (bouger) {
-    std::vector<std::vector<bool>> resultats = std::vector<std::vector<bool>>(joueurs.size()) ;
+    std::vector< std::vector<bool> > demandes_maj = std::vector< std::vector<bool> >(joueurs.size()) ;
     // Faire bouger tous les joueurs
     for (unsigned i=0 ; i<joueurs.size() ; i++){
-      resultats[i] = joueurs.at(i).bouger(directions.at(i), verbose) ;
+      demandes_maj[i] = joueurs.at(i).bouger(directions.at(i), verbose) ;
     }
     // Une fois qu'ils ont tous bougés, faire les mises à jour
     for (unsigned i=0 ; i<joueurs.size() ; i++){
-      mettre_a_jour(resultats.at(i), joueurs, joueurs.at(i).get_numero()) ;
-      compter_messages(nb_messages, resultats.at(i)) ;
+      mettre_a_jour(demandes_maj.at(i), joueurs, joueurs.at(i).get_numero()) ;
+      compter_messages(nb_messages, demandes_maj.at(i)) ;
     }
   }
   if (verbose) {

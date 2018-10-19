@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 // Initialisations variables d'instance
-unsigned char Joueur::m_prochain_num_libre = 0 ;
+unsigned int Joueur::m_prochain_num_libre = 0 ;
 
 // Constructeur(s)
 Joueur::Joueur() {
@@ -16,7 +16,7 @@ Joueur::Joueur() {
   dep_depuis_maj = std::vector<int>(0) ;
 }
 
-void Joueur::set_nb_joueurs(unsigned char nb_joueurs) {
+void Joueur::set_nb_joueurs(unsigned int nb_joueurs) {
   m_nb_joueurs = nb_joueurs ;
   
   positions.resize(nb_joueurs) ;
@@ -26,7 +26,7 @@ void Joueur::set_nb_joueurs(unsigned char nb_joueurs) {
 }
 
 void Joueur::reset() {
-  for (unsigned char i=0 ; i<m_nb_joueurs ; i++){
+  for (unsigned int i=0 ; i<m_nb_joueurs ; i++){
     positions[i] = 0 ;
     derniere_position_connue[i] = 0 ;
     derniere_maj[i] = 0 ;
@@ -38,19 +38,19 @@ void Joueur::reset() {
 void Joueur::aff() {
   printf("Je suis le numéro %u, je dispose des infos suivantes :\n", m_numero) ;
   printf("positions :") ;
-  for (unsigned char i=0 ; i<m_nb_joueurs ; i++){
+  for (unsigned int i=0 ; i<m_nb_joueurs ; i++){
     printf(" %d", positions.at(i)) ;
   }
   printf("\nderniere_position_connue :") ;
-  for (unsigned char i=0 ; i<m_nb_joueurs ; i++){
+  for (unsigned int i=0 ; i<m_nb_joueurs ; i++){
     printf(" %d", derniere_position_connue.at(i)) ;
   }
   printf("\nderniere_maj :") ;
-  for (unsigned char i=0 ; i<m_nb_joueurs ; i++){
+  for (unsigned int i=0 ; i<m_nb_joueurs ; i++){
     printf(" %d", derniere_maj.at(i)) ;
   }
   printf("\ndep_depuis_maj :") ;
-  for (unsigned char i=0 ; i<m_nb_joueurs ; i++){
+  for (unsigned int i=0 ; i<m_nb_joueurs ; i++){
     printf(" %d", dep_depuis_maj.at(i)) ;
   }
   printf("\n") ;
@@ -60,11 +60,11 @@ int Joueur::get_position() {
   return positions[m_numero] ;
 }
 
-unsigned char Joueur::get_numero() {
+unsigned int Joueur::get_numero() {
   return m_numero ;
 }
 
-void Joueur::recevoir_maj(unsigned char expediteur, int nouv_position) {
+void Joueur::recevoir_maj(unsigned int expediteur, int nouv_position) {
   // TODO : on ne fait pas de vérification. Chercher un cas pathologique qui pourrait tout faire foirer
   positions[expediteur] = nouv_position ;
   derniere_position_connue[expediteur] = nouv_position ;
@@ -77,17 +77,18 @@ std::vector<bool> Joueur::bouger(int dep, bool verbose /*=true*/) {
   int ancienne_position ; //La position que nous avions lors de la dernière mise à jour reçue.
   std::vector<bool> maj = std::vector<bool>(m_nb_joueurs) ; // Le vecteur qui sera retourné par la fonction (indique si mise à jour à envoyer)
 
+  // Si le déplacement est hors des limites, prendre le maximum
   if (dep > D_MAX) {
     dep = D_MAX ;
   } else if (dep < -D_MAX) {
     dep = -D_MAX ;
   }
 
-  for ( int i = 0 ; i < m_nb_joueurs ; i++) {
+  for ( unsigned i = 0 ; i < m_nb_joueurs ; i++) {
     derniere_maj[i]++ ;
   }
 
-  for ( int i = 0 ; i < m_nb_joueurs ; i++) {
+  for ( unsigned i = 0 ; i < m_nb_joueurs ; i++) {
     if (i == m_numero) {
       // On a affaire à nous même : mettre à jour directement
       if ( ((dep > 0) && (positions[i] > INT_MAX - dep)) || ((dep < 0) && (positions[i] < INT_MIN - dep)) ) {
