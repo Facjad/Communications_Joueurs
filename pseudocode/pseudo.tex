@@ -1,0 +1,86 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[french]{algorithm2e}
+
+\usepackage{stmaryrd}
+
+\begin{document}
+
+Algorithme pour deux joueurs (sur une droite) :
+
+
+\begin{algorithm}[H]
+  
+  \SetAlgoLined
+  \Entree{nbJoueurs, nbTours, tolérance, Vmax}
+  \Res{nombre de messages échangés}
+  \BlankLine
+  initialisation de nbJoueurs Joueurs \;
+  directions[1..nbJoueurs] $\leftarrow$ vitesse, signée, de chaque joueur \; % ($\in \llbracket -Vmax ; +Vmax \rrbracket$) \;
+  nbMessages $\leftarrow$ 0 \;
+  demandesMaj[nbJoueurs][nbJoueurs] $\leftarrow$ false (demandesMaj[Jx][Jy] contiendra vrai si le joueur Jx a besoin de recevoir la position de Jy) \;
+  \Pour{$i\leftarrow 1$ \KwA nbTours}{
+    écrire dans un fichier la valeur de nbMessages\;
+    \PourCh{joueur}{
+      demandesMaj[numero joueur] $\leftarrow$ joueur.deplacer(directions[numero joueur]) \;
+    }
+    \PourCh{joueur}{
+      \PourCh{autre joueur}{
+        \Si{demanderMaj[numero joueur][numéro autre joueur]}{
+          joueur.mettreAJour(position autre joueur) \;
+          nbMessages $\leftarrow$ nbMessages + 1 \;
+        }
+      }
+    }
+  }
+
+  \caption{Deux joueurs}
+\end{algorithm}
+
+\vspace{3cm}
+
+\begin{algorithm}[H]
+  
+  \SetAlgoLined
+  \Entree{distanceDepl}
+  \Res{tableau de booléens contenant, pour chaque autre joueur, si le joueur courant a besoin d'une mise à jour}
+  \BlankLine
+  maj[nbJoueurs] $\leftarrow$ false \;
+  \Si{distanceDepl est hors des limites}{
+    distanceDepl $\leftarrow$ distance max \;
+  }
+  augmenter position du joueur courant de distanceDepl \;
+  \PourCh{autre joueur}{
+    tempsÉcoulé[numéro autre joueur] $\leftarrow$ tempsÉcoulé[numéro autre joueur] $+$ 1 \;
+  }
+  \PourCh{autre joueur}{
+    d0 $\leftarrow$ distance qui nous séparait lors de la dernière mise à jour \;
+    depSum $\leftarrow$ distance parcourue par le joueur courant depuis la dernière mise à jour \;
+    \Si{tempsÉcoulé[numéro autre joueur] $\times$ Vmax $>$ (d0 $+$ depSum) $\times$ $\varepsilon$}{
+      maj[numero autre joueur] $\leftarrow$ true \;
+    }
+    deplacementDepuisMaj[numero autre joueur] $\leftarrow$ deplacementDepuisMaj[numero autre joueur] $+$ distanceDepl \;
+  }
+  retourner maj \;
+  
+  \caption{Méthode joueur.deplacer}
+\end{algorithm}
+
+\vspace{3cm}
+
+\begin{algorithm}[H]
+  
+  \SetAlgoLined
+  \Entree{numero autre joueur, nouvellePosition}
+  \BlankLine
+  position[numero autre joueur] $\leftarrow$ nouvellePosition \;
+  tempsÉcoulé[numero autre joueur] $\leftarrow$ 0 \;
+  deplacementDepuisMaj[numero autre joueur] $\leftarrow$ 0 \;
+
+  \caption{Méthode joueur.mettreAJour}
+\end{algorithm}
+
+\end{document}
